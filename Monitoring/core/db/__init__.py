@@ -1,2 +1,2 @@
-from .models import User, Sensor
-from .schemas import Sensor, SensorBase, SensorCreate, User, UserBase, UserCreate
+from .models import User, Sensor, Degree
+from .schemas import Degree, DegreeBase, DegreeCreate, Sensor, SensorBase, SensorCreate, User, UserBase, UserCreate
