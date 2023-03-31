@@ -9,17 +9,22 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, index=True)
     email = Column(String, unique=True, index=True)
-    is_active = Column(Boolean, default=True)
+    hashed_password = Column(String, index=True)
+
+class Degree(Base):
+    __tablename__ = "degrees"
     
+    id = Column(Integer, primary_key=True, index = True)
+    time = Column(TIMESTAMP, index=True)
+    degree = Column(Float, index=True)
+    sensor_id = Column(Integer, ForeignKey("sensors.id"))
+    sensor = relationship("Sensor", back_populates="degrees")
 
 class Sensor(Base):
     __tablename__ = "sensors"
 
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(TIMESTAMP, index=True)
-    sensor_number = Column(Integer, index=True)
-    value = Column(Float, index= True)
     administer_id = Column(Integer, ForeignKey("users.id"))
-    
-    # administer = relationship("User", back_populates="sensors")
+    degrees = relationship("Degree", back_populates="sensor")
