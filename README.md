@@ -18,6 +18,36 @@ The frontend will be implemented later. An authentication system is being develo
 
 ## Usage
 
-`git clone https://github.com/melli0505/monitoring_system.git`
-`pip install uvicorn paho-mqtt FastAPI sqlalchemy`
-`uvicorn main:app --reload`
+```
+git clone https://github.com/melli0505/monitoring_system.git
+```
+
+```
+pip install uvicorn paho-mqtt FastAPI sqlalchemy
+```
+
+```
+uvicorn main:app --reload
+```
+
+## Structure
+
+```
+- FastAPI
+- Monitoring
+  └ core
+    └ db
+        └ base.py
+        └ models.py
+        └ schemas.py
+    └ user
+        └ user_crud.py
+        └ user_router.py
+        └ user_schema.py
+    └ utils
+        └ crud.py
+        └ utils.py
+  └ frontend
+    └ main.html
+  └ main.py
+```
