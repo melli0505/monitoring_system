@@ -32,15 +32,17 @@ class Sensor(SensorBase):
 # user
 class UserBase(BaseModel):
     username: str
+    email: str = None
 
 class UserCreate(UserBase):
     password: str
 
 class User(UserBase):
     id: int
-    email: str = None
     hashed_password: str
     sensors: List[Sensor] = []
+    disable: bool = False
 
     class Config:
         orm_mode = True
+
