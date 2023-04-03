@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from base import Base
+from .base import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -12,6 +12,7 @@ class User(Base):
     username = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String, index=True)
+    disable = Column(Boolean, index=True, default=True)
 
 class Degree(Base):
     __tablename__ = "degrees"
@@ -28,3 +29,4 @@ class Sensor(Base):
     id = Column(Integer, primary_key=True, index=True)
     administer_id = Column(Integer, ForeignKey("users.id"))
     degrees = relationship("Degree", back_populates="sensor")
+
