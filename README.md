@@ -16,6 +16,10 @@ The frontend will be implemented later. An authentication system is being develo
   - Broker: Mosquitto
   - Client: paho.mqtt
 
+### More Detail about this project
+
+https://dnai-deny.tistory.com/category/Project
+
 ## Usage
 
 ```
@@ -33,7 +37,6 @@ uvicorn main:app --reload
 ## Structure
 
 ```
-- FastAPI
 - Monitoring
   └ core
     └ db
@@ -44,10 +47,28 @@ uvicorn main:app --reload
         └ user_crud.py
         └ user_router.py
         └ user_schema.py
+    └ sensor
+        └ sensor_crud.py
+        └ sensor_router.py
+    └ data
+        └ data_crud.py
+        └ data_router.py
+        └ data_schema.py
     └ utils
-        └ crud.py
         └ utils.py
-  └ frontend
-    └ main.html
+    └ subscriber.py
+  └ static
+    └ js
+    └ css
+    └ scss
+    └ images
+    └ fonts
+  └ templates
+    └ chart.html
+    └ index.html
+    └ signup.html
   └ main.py
+└ publisher.py
+└ .gitignore
+└ README.md
 ```
