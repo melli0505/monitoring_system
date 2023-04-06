@@ -1,10 +1,11 @@
 from typing import List
+from typing_extensions import Annotated
 
 from fastapi import APIRouter, HTTPException
-from fastapi import Depends
+from fastapi import Depends, Form
 from sqlalchemy.orm import Session
 
-from core.utils import crud
+from core.user import user_crud as crud
 from .user_crud import *
 
 from core.db import schemas
@@ -23,11 +24,12 @@ router = APIRouter(
     tags=['users']
 )
 
-@router.post("/signup", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db=db, username=user.username)
+@router.post("/signup") #, response_model=schemas.User)
+def create_user(username: Annotated[str, Form()], email: Annotated[str, Form()], password: Annotated[str, Form()], db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db=db, username=username)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
+    user = schemas.UserCreate(username=username, email=email, password=password)
     return crud.create_user(db=db, user=user)
 
 @router.get("/", response_model=List[schemas.User])
