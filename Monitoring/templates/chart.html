@@ -4,14 +4,46 @@
       type="text/javascript"
       src="https://www.gstatic.com/charts/loader.js"
     ></script>
+    <link
+      href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+      rel="stylesheet"
+      id="bootstrap-css"
+    />
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
   </head>
   <body>
     <div
-      class="container"
-      style="padding: 20px; margin: 20px; box-shadow: 3px 3px 10px"
+      class="row"
+      style="
+        height: fit-content;
+        padding: 20px;
+        margin: 20px;
+        box-shadow: 3px 3px 10px;
+      "
     >
-      <div class="row">
-        <div id="line_chart" class="col"></div>
+      <div
+        id="line_chart"
+        class="col"
+        style="width: 100%; min-height: 300px"
+      ></div>
+    </div>
+    <div class="row container" style="margin: 20px; padding: 20px">
+      <div class="col">
+        <button
+          id="refresh-btn"
+          class="col btn"
+          style="
+            background: #4e54c8;
+            background: -webkit-linear-gradient(to right, #8f94fb, #4e54c8);
+            background: linear-gradient(to right, #8f94fb, #4e54c8);
+            color: #fff;
+            border: 1px solid #eee;
+            font-size: 20px;
+            border-radius: 35px;
+          "
+        >
+          Refresh
+        </button>
       </div>
     </div>
   </body>
@@ -56,7 +88,6 @@
         legend: { position: "none" },
         colors: [color],
         title: "Temperature",
-        innerHeight: 600,
       };
     };
 
@@ -147,8 +178,11 @@
       });
     }
 
-    setInterval(function () {
+    $("#refresh-btn").on("click", function () {
       updateChart(new_option);
-    }, 10000);
+    });
+    // setInterval(function () {
+    //   updateChart(new_option);
+    // }, 10000);
   </script>
 </html>
