@@ -1,0 +1,154 @@
+<html>
+  <head>
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+  </head>
+  <body>
+    <div
+      class="container"
+      style="padding: 20px; margin: 20px; box-shadow: 3px 3px 10px"
+    >
+      <div class="row">
+        <div id="line_chart" class="col"></div>
+      </div>
+    </div>
+  </body>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script
+    type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"
+  ></script>
+  <script src="static/js/popper.js"></script>
+  <script src="static/js/bootstrap.min.js"></script>
+  <script src="static/js/main.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function ($) {
+      $.ajax({
+        url: "http://localhost:8000/me",
+        method: "GET",
+        contentType: false,
+        processData: false,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: "Bearer" + $.cookie("access_token"),
+        },
+        success: function (response) {
+          alert("get Succeed!");
+          // $.cookie("access_token", response.access_token);
+          $("p").append(response.email);
+          $("p").append(response.username);
+        },
+        error: function (response) {
+          alert(response.responseJSON.detail);
+          location.href = "http://localhost:8000/";
+        },
+      });
+    });
+
+    var chartOption = function (target, color, name) {
+      this.name = name;
+      this.target = target;
+      this.data = null;
+      this.chart = null;
+      this.options = {
+        legend: { position: "none" },
+        colors: [color],
+        title: "Temperature",
+        innerHeight: 600,
+      };
+    };
+
+    var new_option = new chartOption("line_chart", "#037C9B", "Degree");
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(function () {
+      drawChart(new_option);
+    });
+
+    function drawChart(option) {
+      //   var entire_data = new google.visualization.DataTable();
+      //   var sensor_data = [];
+
+      // TODO: multi sensor일 때 처리할 부분
+      //   entire_data.addColumn({ type: "string", label: "Date" });
+      // $.ajax({
+      //     url: "http://localhost:8000/api/sensor/sensor_info",
+      //     method: "GET",
+      //     success: function(response) {
+      //         sensor_data = response;
+      //     }
+      // });
+
+      // if(length(sensor_data) != 0){
+      //     sensor_data.forEach(function (el, index) {
+      //         entire_data.addColumn('Temperature', 'Sensor ' + String(el.id));
+      //     });
+      // }
+
+      //   entire_data.addColumn({ type: "number", label: "Sensor 0" });
+      var o = option;
+      var data = [];
+      if (o != null) {
+        if (o.chart == null && o.data == null) {
+          o.data = new google.visualization.DataTable();
+          o.data.addColumn("string", "time");
+          o.data.addColumn("number", o.name);
+
+          $.ajax({
+            url: "http://localhost:8000/api/data",
+            method: "GET",
+            async: false,
+            success: function (response) {
+              var degrees = response;
+              if (degrees.length != 0) {
+                degrees.forEach(function (el, index) {
+                  data.push([el["time"], el["degree"]]);
+                });
+              }
+            },
+            error: function (response) {
+              data.push(["", 0]);
+            },
+          });
+          o.data.addRows(data);
+          o.chart = new google.visualization.LineChart(
+            document.getElementById(o.target)
+          );
+        }
+        o.chart.draw(o.data, o.options);
+      }
+    }
+
+    function updateChart(option) {
+      var o = option;
+      if (o.data.getNumberOfRows() >= 10) {
+        o.data.removeRows(0, o.data.getNumberOfRows());
+      }
+      $.ajax({
+        url: "http://localhost:8000/api/data",
+        method: "GET",
+        async: false,
+        success: function (response) {
+          var degrees = response;
+          var data = [];
+          if (degrees.length != 0) {
+            degrees.forEach(function (el, index) {
+              data.push([el["time"], el["degree"]]);
+            });
+          }
+          console.log(data);
+          o.data.insertRows(o.data.getNumberOfRows(), data);
+          drawChart(o);
+        },
+        error: function (response) {
+          alert("Get data failed");
+        },
+      });
+    }
+
+    setInterval(function () {
+      updateChart(new_option);
+    }, 10000);
+  </script>
+</html>
