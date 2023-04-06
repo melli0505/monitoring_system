@@ -3,7 +3,7 @@ from typing import Union, Any
 from jose import jwt
 from passlib.context import CryptContext
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -30,7 +30,11 @@ def get_db():
     finally:
         db.close()
 
-async def get_current_user(token: str = Depends(reuseable_oauth), db: Session = Depends(get_db)) -> models.User:
+def get_token(authorization: str = Header(default=None)):
+    print(authorization)
+    return authorization[6:]
+
+async def get_current_user(token: str = Depends(get_token), db: Session = Depends(get_db)) -> models.User:
     try: 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         token_data = user_schema.TokenPayload(**payload)
