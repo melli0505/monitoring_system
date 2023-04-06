@@ -7,9 +7,9 @@ from datetime import timedelta, datetime
 from core.db import models, schemas
 from core.utils import utils
 
-def get_degree(db:Session, skip: int = 0, limit: int = 100):
+def get_degree(db:Session):
     # index 단위로 sensor data 추출
-    return db.query(models.Degree).offset(skip).limit(limit).all()
+    return db.query(models.Degree).all()
 
 def get_degree_by_sensor_num(db: Session, sensor_id: int):
     # sensor number에 따라 data 추출
@@ -34,3 +34,6 @@ def get_sensors(db: Session, skip: int = 0, limit: int = 100):
 
 def get_sensor(db: Session, id: int):
     return db.query(models.Sensor).filter(models.Sensor.id == id).first()
+
+def get_sensor_info(db: Session):
+    return db.query(models.Sensor).all()
