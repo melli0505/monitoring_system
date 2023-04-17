@@ -47,6 +47,7 @@ def run():
 
 if __name__ == "__main__":
     server = ('YOUR_IP_ADDRESS', 2001)
+    server = ('YOUR_IP_ADDRESS', 2001)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     serverSocket.bind(server) 
 
@@ -58,3 +59,4 @@ if __name__ == "__main__":
     animation = OnOffAnimation()
     plt.show() 
     
+
