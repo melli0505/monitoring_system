@@ -34,7 +34,7 @@ def run():
         data_lock.release()
 
 if __name__ == "__main__":
-    server = ('10.0.0.119', 2001)
+    server = ('YOUR_IP_ADDRESS', 2001)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     serverSocket.bind(server) 
 
