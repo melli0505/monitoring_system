@@ -1,4 +1,4 @@
-import socket, array, time
+import socket, array, csv
 from threading import Lock, Thread, Event
 
 import matplotlib.pyplot as plt
@@ -6,33 +6,57 @@ import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
 from matplotlib.widgets import Button
 
-
-from scipy import signal
 import numpy as np
-from numpy.fft import fft, ifft, rfft
+from numpy.fft import fft
 
-class OriginalAnimation:
-    def __init__(self) -> None:
-        self.fig = plt.figure(figsize=(20, 20))
+from stft import show_result
+
+
+class RealTimeAnimation:
+    """
+    Animate original voltage signal graph and fft result.
+    """
+    def __init__(self):
+        # define plot
+        self.fig = plt.figure(figsize=(15, 10))
         gs = gridspec.GridSpec(3, 1)
-        self.original = plt.subplot(gs[0, 0])
-        self.fft_graph = plt.subplot(gs[1, 0])
-        self.stft_graph = plt.subplot(gs[2, 0])
+        self.original = self.fig.add_subplot(2, 1, 1)
+        self.fft_graph = self.fig.add_subplot(2, 1, 2)
 
-        self.is_first = True
-
+        # connect animation method
         self.animation = animation.FuncAnimation(self.fig, self.update, interval=100)
 
+        # define buttons
         self.paused = False
         ax = plt.axes([0.8, 0.025, 0.1, 0.04])
-        self.button = Button(ax, "Stop")
-        self.button.on_clicked(self.toggle_event)
+        ax2 = plt.axes([0.68, 0.025, 0.1, 0.04])
+        ax3 = plt.axes([0.56, 0.025, 0.1, 0.04])
+        
+        # plot control button
+        self.pause_button = Button(ax, "Pause/Restart")
+        self.pause_button.on_clicked(self.toggle_event)
+
+        # data save button
+        self.save_button = Button(ax2, "Save Data")
+        self.save_button.on_clicked(self.save_data)
+
+        # show entire data analysis button
+        self.show_button = Button(ax3, "Show Analysis")
+        self.show_button.on_clicked(show_result)
 
     def update(self, i) -> None:
+        """
+        Run every interval and update graphs.
+        Using lock.
+
+        Args:
+            i : interval
+        """
+
         # update original graph
         data_lock.acquire()
-        if len(entire_data) > 100000:
-            graph_data = entire_data[len(entire_data) - 100000:]
+        if len(entire_data) > 20000:
+            graph_data = entire_data[len(entire_data) - 20000:]
         else: 
             graph_data = entire_data
         data_lock.release()
@@ -54,54 +78,72 @@ class OriginalAnimation:
         self.fft_graph.clear()
         self.fft_graph.plot(frequency, abs(fft_data))
         
-        f, t, Zxx = signal.stft(graph_data, Fs, nperseg=2000)
-        
-        if self.is_first:
-            self.stft = self.stft_graph.pcolormesh(t, f, abs(Zxx), shading="gouraud")
-            self.is_first = False
-        else:
-            self.stft.set_array([t, abs(Zxx)])
-        # self.draw_stft(f, t, Zxx)
-
-    def draw_stft(self, f, t, Zxx):
-        plt.pcolormesh(t, f, np.abs(Zxx), vmin=0, vmax=1, shading="gouraud")    
-
-
-    def window(self, index, max_index):
-        return 0.5 - 0.5 * np.cos(2 * np.pi * index / max_index)
     
-    def toggle_event(self, *args, **kwargs):
+    def toggle_event(self, *args, **kwargs) -> None:
+        """
+        On click event function of pause button.
+        Stop / Restart plotting graphs.
+        """
+
         if self.paused:
             self.animation.event_source.start()
         else:
             self.animation.event_source.stop()
+
         self.paused = not self.paused
 
-def run():
+    def save_data(self, *args, **kwargs) -> None:
+        """
+        Save entire voltage data in csv.
+        During save data, graph plotting will be paused.
+        Using lock.
+        """
+
+        self.animation.event_source.stop()
+
+        data_lock.acquire()
+        f = open("data.csv", "w")
+        target = csv.writer(f)
+        target.writerow(entire_data)
+        data_lock.release()
+
+        print("Saved {0} Data. Restart plotting.".format(len(entire_data)))
+        self.animation.event_source.start()
+
+def run() -> None:
+    """
+    UDP data receive function.
+    Using lock.
+    """
+
     print("Connected", flush=True)
-    while not exit_signal.is_set():
+
+    while True:
         data = serverSocket.recv(16384)
         signals = array.array('f')
         signals.frombytes(data)
         data_lock.acquire()
         entire_data.extend(signals)
         data_lock.release()
-    exit()
 
 
 if __name__ == "__main__":
+    
+    # define socket setting and bind
     server = ('YOUR_IP_ADDRESS', 2001)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     serverSocket.bind(server) 
 
+    # set data / data lock
     entire_data = [0]
     data_lock = Lock()
 
-    exit_signal = Event()
+    # start UDP in another thread
     t = Thread(target=run, args=())
     t.start()
     
-    animation = OriginalAnimation()
+    # start animation 
+    animation = RealTimeAnimation()
     plt.show() 
 
         
