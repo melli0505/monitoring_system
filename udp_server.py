@@ -3,7 +3,9 @@ from threading import Lock, Thread, Event
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.gridspec as gridspec
 from matplotlib.widgets import Button
+
 
 from scipy import signal
 import numpy as np
@@ -11,10 +13,13 @@ from numpy.fft import fft, ifft, rfft
 
 class OriginalAnimation:
     def __init__(self) -> None:
-        self.fig = plt.figure(figsize=(20, 4))
-        self.original = self.fig.add_subplot(3, 1, 1)
-        self.fft_graph = self.fig.add_subplot(3, 1, 2)
-        self.stft_graph = self.fig.add_subplot(3, 1, 3)
+        self.fig = plt.figure(figsize=(20, 20))
+        gs = gridspec.GridSpec(3, 1)
+        self.original = plt.subplot(gs[0, 0])
+        self.fft_graph = plt.subplot(gs[1, 0])
+        self.stft_graph = plt.subplot(gs[2, 0])
+
+        self.is_first = True
 
         self.animation = animation.FuncAnimation(self.fig, self.update, interval=100)
 
@@ -27,7 +32,7 @@ class OriginalAnimation:
         # update original graph
         data_lock.acquire()
         if len(entire_data) > 100000:
-            graph_data = entire_data[len(entire_data) - len(entire_data) // 3:]
+            graph_data = entire_data[len(entire_data) - 100000:]
         else: 
             graph_data = entire_data
         data_lock.release()
@@ -36,18 +41,30 @@ class OriginalAnimation:
         self.original.plot(graph_data)
 
         # update fft graph
-        sampling_rate = 20480
+        n = len(graph_data)
+        k = np.arange(n)
+        Fs = 20480
+        T = n/Fs
+        frequency = k / T
+        frequency = frequency[range(int(n/2))]
 
-        fft_data = fft(graph_data) / len(graph_data)
-        fft_data = fft_data[range(int(len(graph_data) / 2))]
-        N = len(fft_data)
-        n = np.arange(N)
-        T = N / sampling_rate
-        frequency = n / T
-        frequency = frequency[range(int(len(graph_data) / 2))]
+        fft_data = fft(graph_data) / n
+        fft_data = fft_data[range(int(n / 2))]
 
         self.fft_graph.clear()
-        self.fft_graph.plot(frequency, fft_data)
+        self.fft_graph.plot(frequency, abs(fft_data))
+        
+        f, t, Zxx = signal.stft(graph_data, Fs, nperseg=2000)
+        
+        if self.is_first:
+            self.stft = self.stft_graph.pcolormesh(t, f, abs(Zxx), shading="gouraud")
+            self.is_first = False
+        else:
+            self.stft.set_array([t, abs(Zxx)])
+        # self.draw_stft(f, t, Zxx)
+
+    def draw_stft(self, f, t, Zxx):
+        plt.pcolormesh(t, f, np.abs(Zxx), vmin=0, vmax=1, shading="gouraud")    
 
 
     def window(self, index, max_index):
