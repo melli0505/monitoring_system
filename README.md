@@ -36,6 +36,9 @@ uvicorn main:app --reload
 
 ## Structure
 
+- `udp_server.py` is temporary data receiver, it shows real-time original signal graph & fft result. This process communicate with mcc172 DAQ hats by UDP socket.
+- If you want to use this, you need to modify sampling rate and IP Address.
+
 ```
 - Monitoring
   └ core
@@ -71,4 +74,5 @@ uvicorn main:app --reload
 └ publisher.py
 └ .gitignore
 └ README.md
+└ udp_server.py
 ```
