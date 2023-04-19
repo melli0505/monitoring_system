@@ -1,5 +1,5 @@
 import socket, array, csv
-from threading import Lock, Thread, Event
+from threading import Lock, Thread
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -7,10 +7,9 @@ import matplotlib.gridspec as gridspec
 from matplotlib.widgets import Button
 
 import numpy as np
-from numpy.fft import fft
+from numpy.fft import rfft, rfftfreq
 
 from stft import show_result
-
 
 class RealTimeAnimation:
     """
@@ -55,8 +54,8 @@ class RealTimeAnimation:
 
         # update original graph
         data_lock.acquire()
-        if len(entire_data) > 20000:
-            graph_data = entire_data[len(entire_data) - 20000:]
+        if len(entire_data) > 110000:
+            graph_data = entire_data[len(entire_data) - 100000:]
         else: 
             graph_data = entire_data
         data_lock.release()
@@ -65,19 +64,16 @@ class RealTimeAnimation:
         self.original.plot(graph_data)
 
         # update fft graph
-        n = len(graph_data)
-        k = np.arange(n)
         Fs = 20480
-        T = n/Fs
-        frequency = k / T
-        frequency = frequency[range(int(n/2))]
+        Ts = 1/Fs
+        n = len(graph_data)
 
-        fft_data = fft(graph_data) / n
-        fft_data = fft_data[range(int(n / 2))]
+        frequency = rfftfreq(n, Ts)[:-1]
+        fft_data = (rfft(graph_data)/n)[:-1] * 2
 
         self.fft_graph.clear()
-        self.fft_graph.plot(frequency, abs(fft_data))
-        
+        self.fft_graph.plot(frequency, np.abs(fft_data))
+
     
     def toggle_event(self, *args, **kwargs) -> None:
         """
@@ -100,6 +96,7 @@ class RealTimeAnimation:
         """
 
         self.animation.event_source.stop()
+        print("Saving...")
 
         data_lock.acquire()
         f = open("data.csv", "w")
