@@ -35,10 +35,22 @@ def show_result(e) -> None:
     gs = gridspec.GridSpec(3, 1)
 
     # define graph
-    fig = plt.figure(figsize=(24, 8))
+    fig = plt.figure(figsize=(20, 12))
+    fig.suptitle("Data Analysis Result", fontsize=20)
+
     original = plt.subplot(gs[0, 0])
+    original.set_title("Original Signal")
+    original.set(xlabel="Samples", ylabel="mV")
+
     stft = plt.subplot(gs[1, 0])
+    stft.set_title("Short-Term FFT")
+    stft.set(xlabel="Time(sec)", ylabel="Frequency")
+
     fft_graph = plt.subplot(gs[2, 0])
+    fft_graph.set_title("FFT")
+    fft_graph.set(xlabel="Frequency", ylabel="Amplitude")
+
+    plt.subplots_adjust(hspace=0.5)
 
     # plot fft
     Fs = 20480
@@ -51,10 +63,12 @@ def show_result(e) -> None:
     fft_graph.plot(frequency, np.abs(fft_data))
 
     # plot stft
-    f, t, Zxx = signal.stft(entire_data, 20480, nperseg=20000)
+    f, t, Zxx = signal.stft(entire_data, 20480, nperseg=5000)
     stft.pcolormesh(t, f, np.abs(Zxx), shading="gouraud")
 
     # plot original signal graph
     original.plot(entire_data)
 
     plt.show()
+
+# show_result('a')
