@@ -17,10 +17,15 @@ class RealTimeAnimation:
     """
     def __init__(self):
         # define plot
-        self.fig = plt.figure(figsize=(15, 10))
-        gs = gridspec.GridSpec(3, 1)
-        self.original = self.fig.add_subplot(2, 1, 1)
-        self.fft_graph = self.fig.add_subplot(2, 1, 2)
+        self.fig = plt.figure(figsize=(20, 10))
+        self.fig.suptitle('Vibration Data', fontsize=20)
+        plt.subplots_adjust(hspace=0.3)
+        self.original = self.fig.add_subplot(211)
+        self.original.title.set_text('Signal Graph')
+        self.original.set(xlabel="samples", ylabel="mV")
+        self.fft_graph = self.fig.add_subplot(212)
+        self.fft_graph.title.set_text('FFT Graph')
+        self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
 
         # connect animation method
         self.animation = animation.FuncAnimation(self.fig, self.update, interval=100)
@@ -62,6 +67,8 @@ class RealTimeAnimation:
 
         self.original.clear()
         self.original.plot(graph_data)
+        self.original.title.set_text('Signal Graph')
+        self.original.set(xlabel="samples", ylabel="mV")
 
         # update fft graph
         Fs = 20480
@@ -73,6 +80,9 @@ class RealTimeAnimation:
 
         self.fft_graph.clear()
         self.fft_graph.plot(frequency, np.abs(fft_data))
+        self.fft_graph.title.set_text('FFT Graph')
+        self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
+
 
     
     def toggle_event(self, *args, **kwargs) -> None:
