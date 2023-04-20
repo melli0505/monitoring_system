@@ -1,4 +1,4 @@
-import socket, array, csv
+import socket, array, csv, time
 from threading import Lock, Thread
 
 import matplotlib.pyplot as plt
@@ -8,6 +8,8 @@ from matplotlib.widgets import Button
 
 import numpy as np
 from numpy.fft import rfft, rfftfreq
+
+import tensorflow as tf
 
 from stft import show_result
 
@@ -20,9 +22,11 @@ class RealTimeAnimation:
         self.fig = plt.figure(figsize=(20, 10))
         self.fig.suptitle('Vibration Data', fontsize=20)
         plt.subplots_adjust(hspace=0.3)
+
         self.original = self.fig.add_subplot(211)
         self.original.title.set_text('Signal Graph')
         self.original.set(xlabel="samples", ylabel="mV")
+
         self.fft_graph = self.fig.add_subplot(212)
         self.fft_graph.title.set_text('FFT Graph')
         self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
@@ -35,17 +39,23 @@ class RealTimeAnimation:
         ax = plt.axes([0.8, 0.025, 0.1, 0.04])
         ax2 = plt.axes([0.68, 0.025, 0.1, 0.04])
         ax3 = plt.axes([0.56, 0.025, 0.1, 0.04])
+        ax4 = plt.axes([0.44, 0.025, 0.1, 0.04])
         
         # plot control button
         self.pause_button = Button(ax, "Pause/Restart")
         self.pause_button.on_clicked(self.toggle_event)
 
+        # start record button
+        self.pos = 0
+        self.record_button = Button(ax2, "Start Recording")
+        self.record_button.on_clicked(self.start_recording)
+
         # data save button
-        self.save_button = Button(ax2, "Save Data")
+        self.save_button = Button(ax3, "Save Data")
         self.save_button.on_clicked(self.save_data)
 
         # show entire data analysis button
-        self.show_button = Button(ax3, "Show Analysis")
+        self.show_button = Button(ax4, "Show Analysis")
         self.show_button.on_clicked(show_result)
 
     def update(self, i) -> None:
@@ -70,16 +80,24 @@ class RealTimeAnimation:
         self.original.title.set_text('Signal Graph')
         self.original.set(xlabel="samples", ylabel="mV")
 
+        # graph_data = torch.Tensor(graph_data)
+        # graph_data.to('cuda:0')
+
         # update fft graph
-        Fs = 20480
+        Fs = 25600.0
         Ts = 1/Fs
         n = len(graph_data)
 
-        frequency = rfftfreq(n, Ts)[:-1]
-        fft_data = (rfft(graph_data)/n)[:-1] * 2
+        # frequency = rfftfreq(n, Ts)[:-1]
+        # fft_data = (rfft(graph_data)/n)[:-1] * 2
+
+        with tf.device("/device:GPU:0"):
+            fft_data = tf.signal.rfft(input_tensor=tf.cast(graph_data, tf.float32))
+            frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
 
         self.fft_graph.clear()
-        self.fft_graph.plot(frequency, np.abs(fft_data))
+        # self.fft_graph.plot(frequency[:len(frequency)//2], np.abs(fft_data[:len(fft_data)//2]))
+        self.fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
         self.fft_graph.title.set_text('FFT Graph')
         self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
 
@@ -98,6 +116,12 @@ class RealTimeAnimation:
 
         self.paused = not self.paused
 
+    def start_recording(self, *args, **kwargs) -> None:
+        data_lock.acquire()
+        self.pos = len(entire_data) - 1
+        data_lock.release()
+        print("Recording started.")
+
     def save_data(self, *args, **kwargs) -> None:
         """
         Save entire voltage data in csv.
@@ -111,7 +135,7 @@ class RealTimeAnimation:
         data_lock.acquire()
         f = open("data.csv", "w")
         target = csv.writer(f)
-        target.writerow(entire_data)
+        target.writerow(entire_data[self.pos:])
         data_lock.release()
 
         print("Saved {0} Data. Restart plotting.".format(len(entire_data)))
@@ -126,6 +150,8 @@ def run() -> None:
     print("Connected", flush=True)
 
     while True:
+        # signals = [0.6 * np.sin(30 * np.pi * i) * 1.78 * np.sin(np.pi * i * 2) * np.tanh(np.pi) for i in range(1000)]
+        # time.sleep(0.1)
         data = serverSocket.recv(16384)
         signals = array.array('f')
         signals.frombytes(data)

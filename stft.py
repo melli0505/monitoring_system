@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from numpy.fft import rfft, rfftfreq
 import numpy as np
+import tensorflow as tf
 from scipy import signal
-import csv
+import csv, os
 
 def show_result(e) -> None:
     """
@@ -53,17 +54,28 @@ def show_result(e) -> None:
     plt.subplots_adjust(hspace=0.5)
 
     # plot fft
-    Fs = 20480
+    Fs = 25600.0
     Ts = 1/Fs
     n = len(entire_data)
 
-    frequency = rfftfreq(n, Ts)[:-1]
-    fft_data = (rfft(entire_data)/n)[:-1] * 2
+    # frequency = rfftfreq(n, Ts)[:-1]
+    # fft_data = (rfft(entire_data)/n)[:-1] * 2
 
-    fft_graph.plot(frequency, np.abs(fft_data))
+    # entire_data = torch.Tensor(entire_data)
+    # entire_data.to('cuda:0')
+    with tf.device("/device:GPU:0"):
+        fft_data = tf.signal.rfft(input_tensor=tf.cast(entire_data, tf.float32))
+        frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
 
+    # fft_data = torch.fft.rfft(entire_data)[:-1]
+    # frequency = torch.fft.rfftfreq(Fs)[:-1]
+    fft_graph.clear()
+    fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
+    # fft_graph.plot(frequency, np.abs(fft_data))
+
+    
     # plot stft
-    f, t, Zxx = signal.stft(entire_data, 20480, nperseg=5000)
+    f, t, Zxx = signal.stft(entire_data, fs=Fs, nperseg=len(entire_data)//100)
     stft.pcolormesh(t, f, np.abs(Zxx), shading="gouraud")
 
     # plot original signal graph
@@ -71,4 +83,13 @@ def show_result(e) -> None:
 
     plt.show()
 
-# show_result('a')
+
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        tf.config.experimental.set_memory_growth(gpus[0], True)
+    except RuntimeError as e:
+        print(e)
+print(tf.config.experimental.list_logical_devices())
+show_result('a')
