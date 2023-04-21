@@ -156,11 +156,9 @@ def run() -> None:
     print("Connected", flush=True)
 
     while True:
-        signals = [0.6 * np.sin(30 * np.pi * i) * 1.78 * np.sin(np.pi * i * 2) * np.tanh(np.pi) for i in range(1000)]
-        time.sleep(0.1)
-        # data = serverSocket.recv(16384)
-        # signals = array.array('f')
-        # signals.frombytes(data)
+        data = serverSocket.recv(16384)
+        signals = array.array('f')
+        signals.frombytes(data)
         data_lock.acquire()
         entire_data.extend(signals)
         data_lock.release()

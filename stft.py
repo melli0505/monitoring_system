@@ -59,13 +59,16 @@ def show_result(e) -> None:
     Ts = 1/Fs
     n = len(entire_data)
 
+    # numpy fft
     # frequency = rfftfreq(n, Ts)[:-1]
     # fft_data = (rfft(entire_data)/n)[:-1] * 2
 
+    # tensorflow fft
     # with tf.device("/device:GPU:0"):
     #     fft_data = tf.signal.rfft(input_tensor=tf.cast(entire_data, tf.float32))
     #     frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
 
+    # pytorch fft
     graph_data = torch.Tensor(entire_data)
     graph_data.to("cuda:0")
     fft_data = torch.fft.rfft(graph_data) / n
@@ -74,22 +77,20 @@ def show_result(e) -> None:
     fft_graph.clear()
     fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
     
-    # plot stft
-    f, t, Zxx = signal.stft(entire_data, fs=Fs, nperseg=len(entire_data)//100)
-    stft.pcolormesh(t, f, np.abs(Zxx), shading="gouraud")
+    
+    # scipy stft
+    # f, t, Zxx = signal.stft(entire_data, fs=Fs, nperseg=len(entire_data)//100)
+    # stft.pcolormesh(t, f, np.abs(Zxx), shading="gouraud")
+
+    # pytorch stft
+    graph_data = graph_data.unsqueeze(0)
+    stft_ = torch.stft(graph_data, 12800)
+    stft_data = torch.sqrt(stft_[:,:,:,0] ** 2 + stft_[:,:,:,1]**2)
+    stft.pcolormesh(stft_data[0])
 
     # plot original signal graph
     original.plot(entire_data)
 
     plt.show()
 
-
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpus[0], True)
-    except RuntimeError as e:
-        print(e)
-print(tf.config.experimental.list_logical_devices())
 show_result('a')
