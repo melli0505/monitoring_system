@@ -10,6 +10,7 @@ import numpy as np
 from numpy.fft import rfft, rfftfreq
 
 import tensorflow as tf
+import torch
 
 from stft import show_result
 
@@ -80,23 +81,28 @@ class RealTimeAnimation:
         self.original.title.set_text('Signal Graph')
         self.original.set(xlabel="samples", ylabel="mV")
 
-        # graph_data = torch.Tensor(graph_data)
-        # graph_data.to('cuda:0')
-
         # update fft graph
         Fs = 25600.0
         Ts = 1/Fs
         n = len(graph_data)
 
+        # numpy fft
         # frequency = rfftfreq(n, Ts)[:-1]
         # fft_data = (rfft(graph_data)/n)[:-1] * 2
 
-        with tf.device("/device:GPU:0"):
-            fft_data = tf.signal.rfft(input_tensor=tf.cast(graph_data, tf.float32))
-            frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
+        # tensorflow fft
+        # with tf.device("/device:GPU:0"):
+        #     fft_data = tf.signal.rfft(input_tensor=tf.cast(graph_data, tf.float32))
+        #     frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs, tf.cast(n, tf.float32)))
+
+        # pytorch fft
+        graph_data = torch.Tensor(graph_data)
+        graph_data.to("cuda:0")
+        fft_data = torch.fft.rfft(graph_data)
+        frequency = torch.arange(0.0, Fs/2.0, Fs/n)
+
 
         self.fft_graph.clear()
-        # self.fft_graph.plot(frequency[:len(frequency)//2], np.abs(fft_data[:len(fft_data)//2]))
         self.fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
         self.fft_graph.title.set_text('FFT Graph')
         self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
@@ -150,11 +156,11 @@ def run() -> None:
     print("Connected", flush=True)
 
     while True:
-        # signals = [0.6 * np.sin(30 * np.pi * i) * 1.78 * np.sin(np.pi * i * 2) * np.tanh(np.pi) for i in range(1000)]
-        # time.sleep(0.1)
-        data = serverSocket.recv(16384)
-        signals = array.array('f')
-        signals.frombytes(data)
+        signals = [0.6 * np.sin(30 * np.pi * i) * 1.78 * np.sin(np.pi * i * 2) * np.tanh(np.pi) for i in range(1000)]
+        time.sleep(0.1)
+        # data = serverSocket.recv(16384)
+        # signals = array.array('f')
+        # signals.frombytes(data)
         data_lock.acquire()
         entire_data.extend(signals)
         data_lock.release()
@@ -163,7 +169,7 @@ def run() -> None:
 if __name__ == "__main__":
     
     # define socket setting and bind
-    server = ('YOUR_IP_ADDRESS', 2001)
+    server = ('10.0.0.119', 2001)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     serverSocket.bind(server) 
 

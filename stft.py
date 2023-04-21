@@ -3,6 +3,7 @@ import matplotlib.gridspec as gridspec
 from numpy.fft import rfft, rfftfreq
 import numpy as np
 import tensorflow as tf
+import torch
 from scipy import signal
 import csv, os
 
@@ -61,18 +62,17 @@ def show_result(e) -> None:
     # frequency = rfftfreq(n, Ts)[:-1]
     # fft_data = (rfft(entire_data)/n)[:-1] * 2
 
-    # entire_data = torch.Tensor(entire_data)
-    # entire_data.to('cuda:0')
-    with tf.device("/device:GPU:0"):
-        fft_data = tf.signal.rfft(input_tensor=tf.cast(entire_data, tf.float32))
-        frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
+    # with tf.device("/device:GPU:0"):
+    #     fft_data = tf.signal.rfft(input_tensor=tf.cast(entire_data, tf.float32))
+    #     frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
 
-    # fft_data = torch.fft.rfft(entire_data)[:-1]
-    # frequency = torch.fft.rfftfreq(Fs)[:-1]
+    graph_data = torch.Tensor(entire_data)
+    graph_data.to("cuda:0")
+    fft_data = torch.fft.rfft(graph_data) / n
+
+    frequency = torch.arange(0.0, Fs/2.0, Fs/n)
     fft_graph.clear()
     fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
-    # fft_graph.plot(frequency, np.abs(fft_data))
-
     
     # plot stft
     f, t, Zxx = signal.stft(entire_data, fs=Fs, nperseg=len(entire_data)//100)
