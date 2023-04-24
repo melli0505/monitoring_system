@@ -75,7 +75,7 @@ def show_result(e) -> None:
 
     frequency = torch.arange(0.0, Fs/2.0, Fs/n)
     fft_graph.clear()
-    fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
+    fft_graph.plot(frequency[1:len(fft_data)//2], np.abs(fft_data[1:len(fft_data)//2]))
     
     
     # scipy stft
@@ -92,5 +92,3 @@ def show_result(e) -> None:
     original.plot(entire_data)
 
     plt.show()
-
-show_result('a')
