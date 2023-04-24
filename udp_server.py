@@ -9,7 +9,6 @@ from matplotlib.widgets import Button
 import numpy as np
 from numpy.fft import rfft, rfftfreq
 
-import tensorflow as tf
 import torch
 
 from stft import show_result
@@ -33,7 +32,7 @@ class RealTimeAnimation:
         self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
 
         # connect animation method
-        self.animation = animation.FuncAnimation(self.fig, self.update, interval=100)
+        self.animation = animation.FuncAnimation(self.fig, self.update, interval=50)
 
         # define buttons
         self.paused = False
@@ -41,7 +40,7 @@ class RealTimeAnimation:
         ax2 = plt.axes([0.68, 0.025, 0.1, 0.04])
         ax3 = plt.axes([0.56, 0.025, 0.1, 0.04])
         ax4 = plt.axes([0.44, 0.025, 0.1, 0.04])
-        
+
         # plot control button
         self.pause_button = Button(ax, "Pause/Restart")
         self.pause_button.on_clicked(self.toggle_event)
@@ -72,7 +71,7 @@ class RealTimeAnimation:
         data_lock.acquire()
         if len(entire_data) > 110000:
             graph_data = entire_data[len(entire_data) - 100000:]
-        else: 
+        else:
             graph_data = entire_data
         data_lock.release()
 
@@ -108,7 +107,7 @@ class RealTimeAnimation:
         self.fft_graph.set(xlabel="frequency", ylabel="amplitude")
 
 
-    
+
     def toggle_event(self, *args, **kwargs) -> None:
         """
         On click event function of pause button.
@@ -157,19 +156,18 @@ def run() -> None:
 
     while True:
         data = serverSocket.recv(16384)
-        signals = array.array('f')
+        signals = array.array('d')
         signals.frombytes(data)
         data_lock.acquire()
         entire_data.extend(signals)
         data_lock.release()
 
-
 if __name__ == "__main__":
-    
+
     # define socket setting and bind
     server = ('YOUR_IP_ADDRESS', 2001)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    serverSocket.bind(server) 
+    serverSocket.bind(server)
 
     # set data / data lock
     entire_data = [0]
@@ -178,9 +176,7 @@ if __name__ == "__main__":
     # start UDP in another thread
     t = Thread(target=run, args=())
     t.start()
-    
-    # start animation 
-    animation = RealTimeAnimation()
-    plt.show() 
 
-        
+    # start animation
+    animation = RealTimeAnimation()
+    plt.show()
