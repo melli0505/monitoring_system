@@ -1,11 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from numpy.fft import rfft, rfftfreq
 import numpy as np
-import tensorflow as tf
 import torch
-from scipy import signal
-import csv, os
+import csv
 
 def show_result(e) -> None:
     """
@@ -27,12 +24,6 @@ def show_result(e) -> None:
     if len(entire_data) <= 1:
         print("No data saved. Please try after save data.")
         return 
-    
-    # calculate rms, not use now
-    # rms = []
-    # for i in range(65):
-    #     a = sum(entire_data[i * 9 : i * 9 + 9])
-    #     rms.append((a^2) / len(a))
 
     gs = gridspec.GridSpec(3, 1)
 
@@ -59,15 +50,6 @@ def show_result(e) -> None:
     Ts = 1/Fs
     n = len(entire_data)
 
-    # numpy fft
-    # frequency = rfftfreq(n, Ts)[:-1]
-    # fft_data = (rfft(entire_data)/n)[:-1] * 2
-
-    # tensorflow fft
-    # with tf.device("/device:GPU:0"):
-    #     fft_data = tf.signal.rfft(input_tensor=tf.cast(entire_data, tf.float32))
-    #     frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs,tf.cast(n, tf.float32)))
-
     # pytorch fft
     graph_data = torch.Tensor(entire_data)
     graph_data.to("cuda:0")
@@ -77,11 +59,6 @@ def show_result(e) -> None:
     fft_graph.clear()
     fft_graph.plot(frequency[1:len(fft_data)//2], np.abs(fft_data[1:len(fft_data)//2]))
     
-    
-    # scipy stft
-    # f, t, Zxx = signal.stft(entire_data, fs=Fs, nperseg=len(entire_data)//100)
-    # stft.pcolormesh(t, f, np.abs(Zxx), shading="gouraud")
-
     # pytorch stft
     graph_data = graph_data.unsqueeze(0)
     stft_ = torch.stft(graph_data, 12800)

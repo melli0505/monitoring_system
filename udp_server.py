@@ -7,8 +7,6 @@ import matplotlib.gridspec as gridspec
 from matplotlib.widgets import Button
 
 import numpy as np
-from numpy.fft import rfft, rfftfreq
-
 import torch
 
 from stft import show_result
@@ -84,15 +82,6 @@ class RealTimeAnimation:
         Fs = 25600.0
         Ts = 1/Fs
         n = len(graph_data)
-
-        # numpy fft
-        # frequency = rfftfreq(n, Ts)[:-1]
-        # fft_data = (rfft(graph_data)/n)[:-1] * 2
-
-        # tensorflow fft
-        # with tf.device("/device:GPU:0"):
-        #     fft_data = tf.signal.rfft(input_tensor=tf.cast(graph_data, tf.float32))
-        #     frequency = tf.range(0.0, tf.divide(Fs,2.0), tf.divide(Fs, tf.cast(n, tf.float32)))
 
         # pytorch fft
         graph_data = torch.Tensor(graph_data)
