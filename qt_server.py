@@ -89,6 +89,8 @@ class Main(QWidget):
         self.pos = 0
         self.record = False
         self.time = time.time()
+        self.second = time.time()
+        self.recording_now = False
 
         # set line graph
         self.orig_p = self.orig.plot(pen='b')
@@ -133,9 +135,16 @@ class Main(QWidget):
         else:
             self.graph_data = entire_data
 
-        if self.record and time.time() - self.time >= 60:
-            self.time = time.time()
+        if self.record and not self.recording_now and time.time() - self.time >= 60:
+            self.recording_now = True
+            self.second = time.time()
+            self.pos = len(entire_data) - 1
+            print("recording")
+        if self.recording_now and time.time() - self.second >= 1: 
+            print("second")
             self.save_data()
+            self.time = time.time()
+
 
         data_lock.release()
         self.draw_chart()
@@ -155,7 +164,7 @@ class Main(QWidget):
         Set start point of saving data.
         """
         self.record = True
-        self.pos = len(entire_data) - 1
+        self.time = time.time()
         print("Recording Start.")
 
     def stop_recording(self) -> None:
@@ -173,10 +182,10 @@ class Main(QWidget):
         print("Saving...")
 
         t = '.'.join(list(map(str, time.localtime()))[:6])
-        f = open(f"./Data/{t}.46", "w")
+        f = open(f"./Data/{t}", "w")
         f.write(','.join(list(map(str, entire_data[self.pos:]))))
         self.pos = len(entire_data) - 1
-
+        self.recording_now = False
         
 
 
@@ -192,6 +201,7 @@ def run() -> None:
         signals = array.array('d')
         signals.frombytes(data)
         # print(c, len(signals))
+        # print(signals[-1])
         sys.stdout.flush()
         data_lock.acquire()
         entire_data.extend(signals)
