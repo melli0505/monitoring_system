@@ -18,7 +18,7 @@ The frontend will be implemented later. An authentication system is being develo
 
 ### More Detail about this project
 
-https://dnai-deny.tistory.com/category/Project
+https://dnai-deny.tistory.com/category/Project/Monitoring%20System
 
 ## Usage
 
@@ -31,12 +31,16 @@ pip install uvicorn paho-mqtt FastAPI sqlalchemy
 ```
 
 ```
+cd Monitoring
+```
+
+```
 uvicorn main:app --reload
 ```
 
 ## Structure
 
-- `udp_server.py` is temporary data receiver, it shows real-time original signal graph & fft result. This process communicate with mcc172 DAQ hats by UDP socket.
+- `wireless_udp/qt_server.py` is plotter for vibration data, implemented by pyqtgraph. It shows real-time original signal graph & fft result. This process communicate with mcc172 DAQ hats by high-speed wireless communication.
 - If you want to use this, you need to modify sampling rate and IP Address.
 
 ```
@@ -71,8 +75,11 @@ uvicorn main:app --reload
     └ index.html
     └ signup.html
   └ main.py
-└ publisher.py
+- wireless_udp
+  └ qt_server.py
+  └ qt_stft.py
+  └ matplotlib_server.py
+  └ matplotlib_stft.py
 └ .gitignore
 └ README.md
-└ udp_server.py
 ```
