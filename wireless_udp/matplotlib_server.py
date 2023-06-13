@@ -10,7 +10,7 @@ import numpy as np
 from numpy.fft import rfft, rfftfreq
 import torch
 
-from stft import show_result
+from wireless_udp.stft import show_result
 
 class RealTimeAnimation:
     """
