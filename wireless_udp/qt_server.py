@@ -112,7 +112,7 @@ class Main(QWidget):
         self.orig_p.setData(self.graph_data)  
         
         # update fft graph
-        Fs = 25600.0
+        Fs = 17066.0
         n = len(self.graph_data)
         
         # pytorch fft
@@ -121,7 +121,7 @@ class Main(QWidget):
         fft_data = torch.fft.rfft(graph_data) / n
         frequency = torch.arange(0.0, Fs/2.0, Fs/n)
 
-        self.fft_p.setData(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
+        self.fft_p.setData(frequency[:len(fft_data)-1], np.abs(fft_data[1:len(fft_data)]))
 
         
     @pyqtSlot()
@@ -130,20 +130,22 @@ class Main(QWidget):
         Separate plotting data from entire data.
         """
         data_lock.acquire()
-        if len(entire_data) > 110000:
+        if len(entire_data) > 105000:
             self.graph_data = entire_data[len(entire_data) - 100000:]
         else:
             self.graph_data = entire_data
 
-        if self.record and not self.recording_now and time.time() - self.time >= 60:
-            self.recording_now = True
-            self.second = time.time()
-            self.pos = len(entire_data) - 1
-            print("recording")
-        if self.recording_now and time.time() - self.second >= 1: 
-            print("second")
+        if self.record and time.time() - self.time >= 60:
             self.save_data()
-            self.time = time.time()
+        # if self.record and not self.recording_now and time.time() - self.time >= 60:
+        #     self.recording_now = True
+        #     self.second = time.time()
+        #     self.pos = len(entire_data) - 1
+        #     print("recording")
+        # if self.recording_now and time.time() - self.second >= 1: 
+        #     print("second")
+        #     self.save_data()
+        #     self.time = time.time()
 
 
         data_lock.release()
@@ -165,6 +167,7 @@ class Main(QWidget):
         """
         self.record = True
         self.time = time.time()
+        self.pos = len(entire_data) - 1
         print("Recording Start.")
 
     def stop_recording(self) -> None:
@@ -182,10 +185,11 @@ class Main(QWidget):
         print("Saving...")
 
         t = '.'.join(list(map(str, time.localtime()))[:6])
-        f = open(f"./Data/{t}", "w")
+        f = open(f"./Data/test_Channel1/{t}", "w")
         f.write(','.join(list(map(str, entire_data[self.pos:]))))
+        self.time = time.time()
         self.pos = len(entire_data) - 1
-        self.recording_now = False
+        # self.recording_now = False
         
 
 
@@ -197,11 +201,12 @@ def run() -> None:
     global c
     print("Connected", flush=True)
     while True:
-        data = serverSocket.recv(40000)
+        data = serverSocket.recv(100000)
+        # print(data.__sizeof__(), type(data))
         signals = array.array('d')
         signals.frombytes(data)
-        # print(c, len(signals))
-        # print(signals[-1])
+        print(c, signals[-1])
+        print(c, len(signals))
         sys.stdout.flush()
         data_lock.acquire()
         entire_data.extend(signals)

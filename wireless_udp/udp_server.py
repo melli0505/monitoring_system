@@ -7,6 +7,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.widgets import Button
 
 import numpy as np
+from numpy.fft import rfft, rfftfreq
 import torch
 
 from stft import show_result
@@ -82,13 +83,15 @@ class RealTimeAnimation:
         Fs = 25600.0
         Ts = 1/Fs
         n = len(graph_data)
-
+        
         # pytorch fft
         graph_data = torch.Tensor(graph_data)
         graph_data.to("cuda:0")
         fft_data = torch.fft.rfft(graph_data)
         frequency = torch.arange(0.0, Fs/2.0, Fs/n)
-
+        
+        # frequency = rfftfreq(n, Ts)[:-1]
+        # fft_data = (rfft(graph_data)/n)[:-1] * 2
 
         self.fft_graph.clear()
         self.fft_graph.plot(frequency[:len(fft_data)//2], np.abs(fft_data[:len(fft_data)//2]))
@@ -144,7 +147,7 @@ def run() -> None:
     print("Connected", flush=True)
 
     while True:
-        data = serverSocket.recv(16384)
+        data = serverSocket.recv(32768)
         signals = array.array('d')
         signals.frombytes(data)
         data_lock.acquire()
