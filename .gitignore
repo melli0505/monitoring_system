@@ -1,6 +1,9 @@
-publisher.py
-Monitoring/core/subscriber.py
 __pycache__
 .DS_Store
-Monitoring/core/subscriber2.py
+*.csv
+*.log
+*.zip
 Data/
+publisher.py
+Monitoring/core/subscriber.py
+Monitoring/core/subscriber2.py
