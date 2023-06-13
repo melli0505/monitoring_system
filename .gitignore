@@ -4,6 +4,3 @@ __pycache__
 *.log
 *.zip
 Data/
-publisher.py
-Monitoring/core/subscriber.py
-Monitoring/core/subscriber2.py
