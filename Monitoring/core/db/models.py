@@ -14,19 +14,52 @@ class User(Base):
     hashed_password = Column(String, index=True)
     disable = Column(Boolean, index=True, default=True)
 
-class Degree(Base):
-    __tablename__ = "degrees"
+class Voltage(Base):
+    __tablename__ = "voltages"
     
     id = Column(Integer, primary_key=True, index = True)
     time = Column(TIMESTAMP, index=True)
-    degree = Column(Float, index=True)
-    sensor_id = Column(Integer, ForeignKey("sensors.id"))
-    sensor = relationship("Sensor", back_populates="degrees")
+    voltage = Column(Float, index=True)
 
-class Sensor(Base):
-    __tablename__ = "sensors"
+class Current(Base):
+    __tablename__ = "currents"
+    
+    id = Column(Integer, primary_key=True, index = True)
+    time = Column(TIMESTAMP, index=True)
+    current = Column(Float, index=True)
 
-    id = Column(Integer, primary_key=True, index=True)
-    administer_id = Column(Integer, ForeignKey("users.id"))
-    degrees = relationship("Degree", back_populates="sensor")
+class Power(Base):
+    __tablename__ = "powers"
+    
+    id = Column(Integer, primary_key=True, index = True)
+    time = Column(TIMESTAMP, index=True)
+    power = Column(Float, index=True)
+
+class Energy(Base):
+    __tablename__ = "energies"
+    
+    id = Column(Integer, primary_key=True, index = True)
+    time = Column(TIMESTAMP, index=True)
+    energy = Column(Float, index=True)
+
+class PF(Base):
+    __tablename__ = "pfs"
+    
+    id = Column(Integer, primary_key=True, index = True)
+    time = Column(TIMESTAMP, index=True)
+    pf = Column(Float, index=True)
+
+class Frequency(Base):
+    __tablename__ = "frequencies"
+    
+    id = Column(Integer, primary_key=True, index = True)
+    time = Column(TIMESTAMP, index=True)
+    frequency = Column(Float, index=True)
+
+# class Sensor(Base):
+#     __tablename__ = "sensors"
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     administer_id = Column(Integer, ForeignKey("users.id"))
+#     degrees = relationship("Degree", back_populates="sensor")
 

@@ -2,30 +2,81 @@ from typing import List, Union
 from pandas import Timestamp
 from pydantic import BaseModel
 
-# data
-class DegreeBase(BaseModel):
+# Voltage
+class VoltageBase(BaseModel):
     time: Timestamp
-    degree: float
-    sensor_id: int
+    voltage: float
 
-class DegreeCreate(DegreeBase):
+class VoltageCreate(VoltageBase):
     pass
 
-class Degree(DegreeBase):
+class Voltage(VoltageBase):
     id: int
     class Config:
         orm_mode = True
 
-# sensor
-class SensorBase(BaseModel):
-    id: int
+# Current
+class CurrentBase(BaseModel):
+    time: Timestamp
+    current: float
 
-class SensorCreate(SensorBase):
+class CurrentCreate(CurrentBase):
     pass
 
-class Sensor(SensorBase):
-    administer_id : int = 1
-    degrees : List[Degree] = []
+class Current(CurrentBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+# Power
+class PowerBase(BaseModel):
+    time: Timestamp
+    power: float
+
+class PowerCreate(PowerBase):
+    pass
+
+class Power(PowerBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+# Energy
+class EnergyBase(BaseModel):
+    time: Timestamp
+    energy: float
+
+class EnergyCreate(EnergyBase):
+    pass
+
+class Energy(EnergyBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+# PF
+class PFBase(BaseModel):
+    time: Timestamp
+    pf: float
+
+class PFCreate(PFBase):
+    pass
+
+class PF(PFBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+# Frequency
+class FrequencyBase(BaseModel):
+    time: Timestamp
+    frequency: float
+
+class FrequencyCreate(FrequencyBase):
+    pass
+
+class Frequency(FrequencyBase):
+    id: int
     class Config:
         orm_mode = True
 
@@ -40,7 +91,6 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     hashed_password: str
-    sensors: List[Sensor] = []
     disable: bool = False
 
     class Config:
