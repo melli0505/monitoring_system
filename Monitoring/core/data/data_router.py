@@ -8,7 +8,7 @@ from core.db.base import SessionLocal
 
 from .data_crud import *
 
-from pzem_pub import publish_control
+from mqtt.pzem_pub import publish_control
 
 def get_db():
     db = SessionLocal()
