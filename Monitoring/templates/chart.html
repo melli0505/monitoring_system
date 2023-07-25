@@ -11,39 +11,133 @@
     />
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
   </head>
+
   <body>
-    <div
-      class="row"
-      style="
-        height: fit-content;
-        padding: 20px;
-        margin: 20px;
-        box-shadow: 3px 3px 10px;
-      "
-    >
+    <div>
+      <div id="title-div" style="margin: 30px">
+        <h2 class="text-center">AC Energy Monitor</h2>
+      </div>
+      <div id="chart" style="margin-left: 100px; margin-right: 100px">
+        <div class="row">
+          <div
+            class="col"
+            style="
+              height: fit-content;
+              padding: 20px;
+              margin: 20px;
+              box-shadow: 3px 3px 10px;
+            "
+          >
+            <div
+              id="voltage_chart"
+              style="width: 100%; min-height: 300px"
+            ></div>
+          </div>
+          <div
+            class="col"
+            style="
+              height: fit-content;
+              padding: 20px;
+              margin: 20px;
+              box-shadow: 3px 3px 10px;
+            "
+          >
+            <div
+              id="current_chart"
+              style="width: 100%; min-height: 300px"
+            ></div>
+          </div>
+
+          <div
+            class="col"
+            style="
+              height: fit-content;
+              padding: 20px;
+              margin: 20px;
+              box-shadow: 3px 3px 10px;
+            "
+          >
+            <div id="energy_chart" style="width: 100%; min-height: 300px"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div
+            class="col"
+            style="
+              height: fit-content;
+              padding: 20px;
+              margin: 20px;
+              box-shadow: 3px 3px 10px;
+            "
+          >
+            <div id="power_chart" style="width: 100%; min-height: 300px"></div>
+          </div>
+          <div
+            class="col"
+            style="
+              height: fit-content;
+              padding: 20px;
+              margin: 20px;
+              box-shadow: 3px 3px 10px;
+            "
+          >
+            <div id="pf_chart" style="width: 100%; min-height: 300px"></div>
+          </div>
+          <div
+            class="col"
+            style="
+              height: fit-content;
+              padding: 20px;
+              margin: 20px;
+              box-shadow: 3px 3px 10px;
+            "
+          >
+            <div
+              id="frequency_chart"
+              style="width: 100%; min-height: 300px"
+            ></div>
+          </div>
+        </div>
+      </div>
       <div
-        id="line_chart"
-        class="col"
-        style="width: 100%; min-height: 300px"
-      ></div>
-    </div>
-    <div class="row container" style="margin: 20px; padding: 20px">
-      <div class="col">
-        <button
-          id="refresh-btn"
-          class="col btn"
-          style="
-            background: #4e54c8;
-            background: -webkit-linear-gradient(to right, #8f94fb, #4e54c8);
-            background: linear-gradient(to right, #8f94fb, #4e54c8);
-            color: #fff;
-            border: 1px solid #eee;
-            font-size: 20px;
-            border-radius: 35px;
-          "
-        >
-          Refresh
-        </button>
+        id="refresh"
+        class="row"
+        style="margin-left: 100px; margin-right: 100px; padding: 20px"
+      >
+        <div class="col">
+          <button
+            id="refresh-btn"
+            class="col btn"
+            style="
+              background: #219ebc;
+              background: -webkit-linear-gradient(to right, #8ecae6, #219ebc);
+              background: linear-gradient(to right, #8ecae6, #219ebc);
+              color: #fff;
+              border: 1px solid #eee;
+              font-size: 20px;
+              border-radius: 35px;
+            "
+          >
+            Refresh
+          </button>
+        </div>
+        <div class="col">
+          <button
+            id="reset-btn"
+            class="col btn"
+            style="
+              background: #219ebc;
+              background: -webkit-linear-gradient(to right, #8ecae6, #219ebc);
+              background: linear-gradient(to right, #8ecae6, #219ebc);
+              color: #fff;
+              border: 1px solid #eee;
+              font-size: 20px;
+              border-radius: 35px;
+            "
+          >
+            Reset Energy Counter
+          </button>
+        </div>
       </div>
     </div>
   </body>
@@ -67,10 +161,10 @@
           Authorization: "Bearer" + $.cookie("access_token"),
         },
         success: function (response) {
-          alert("get Succeed!");
+          console.log("get Succeed!");
           // $.cookie("access_token", response.access_token);
-          $("p").append(response.email);
-          $("p").append(response.username);
+          // $("p").append(response.email);
+          // $("p").append(response.username);
         },
         error: function (response) {
           alert(response.responseJSON.detail);
@@ -79,7 +173,7 @@
       });
     });
 
-    var chartOption = function (target, color, name) {
+    var chartOption = function (target, color, name, measure) {
       this.name = name;
       this.target = target;
       this.data = null;
@@ -87,14 +181,95 @@
       this.options = {
         legend: { position: "none" },
         colors: [color],
-        title: "Temperature",
+        title: name,
+        titleTextStyle: {
+          fontSize: 17,
+          bold: true,
+          italic: true,
+        },
+        hAxis: { textPosition: "none" },
+        vAxis: { title: name + " " + measure },
       };
     };
 
-    var new_option = new chartOption("line_chart", "#037C9B", "Degree");
+    var pfOption = function (target, color, name, measure) {
+      this.name = name;
+      this.target = target;
+      this.data = null;
+      this.chart = null;
+      this.options = {
+        legend: { position: "none" },
+        colors: [color],
+        title: name,
+        titleTextStyle: {
+          fontSize: 17,
+          bold: true,
+          italic: true,
+        },
+        hAxis: { textPosition: "none" },
+        vAxis: { title: name + " " + measure, minValue: 0 },
+      };
+    };
+
+    var voltage_option = new chartOption(
+      "voltage_chart",
+      "#8ECAE6",
+      "voltage",
+      "(V)"
+    );
     google.charts.load("current", { packages: ["corechart"] });
     google.charts.setOnLoadCallback(function () {
-      drawChart(new_option);
+      drawChart(voltage_option);
+    });
+
+    var current_option = new chartOption(
+      "current_chart",
+      "#219EBC",
+      "current",
+      "(A)"
+    );
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(function () {
+      drawChart(current_option);
+    });
+
+    var energy_option = new chartOption(
+      "energy_chart",
+      "#023047",
+      "energy",
+      "(Wh)"
+    );
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(function () {
+      drawChart(energy_option);
+    });
+
+    var power_option = new chartOption(
+      "power_chart",
+      "#FFB703",
+      "power",
+      "(W)"
+    );
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(function () {
+      drawChart(power_option);
+    });
+
+    var frequency_option = new chartOption(
+      "frequency_chart",
+      "#ff9900",
+      "frequency",
+      "(Hz)"
+    );
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(function () {
+      drawChart(frequency_option);
+    });
+
+    var pf_option = new pfOption("pf_chart", "#FB8500", "pf", "");
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(function () {
+      drawChart(pf_option);
     });
 
     function drawChart(option) {
@@ -127,14 +302,14 @@
           o.data.addColumn("number", o.name);
 
           $.ajax({
-            url: "http://localhost:8000/api/data",
+            url: "http://localhost:8000/api/data/" + o.name,
             method: "GET",
             async: false,
             success: function (response) {
               var degrees = response;
               if (degrees.length != 0) {
                 degrees.forEach(function (el, index) {
-                  data.push([el["time"], el["degree"]]);
+                  data.push([el["time"], el[o.name]]);
                 });
               }
             },
@@ -143,7 +318,7 @@
             },
           });
           o.data.addRows(data);
-          o.chart = new google.visualization.LineChart(
+          o.chart = new google.visualization.AreaChart(
             document.getElementById(o.target)
           );
         }
@@ -153,11 +328,11 @@
 
     function updateChart(option) {
       var o = option;
-      if (o.data.getNumberOfRows() >= 10) {
+      if (o.data.getNumberOfRows() >= 15) {
         o.data.removeRows(0, o.data.getNumberOfRows());
       }
       $.ajax({
-        url: "http://localhost:8000/api/data",
+        url: "http://localhost:8000/api/data/" + o.name,
         method: "GET",
         async: false,
         success: function (response) {
@@ -165,7 +340,7 @@
           var data = [];
           if (degrees.length != 0) {
             degrees.forEach(function (el, index) {
-              data.push([el["time"], el["degree"]]);
+              data.push([el["time"], el[o.name]]);
             });
           }
           console.log(data);
@@ -178,11 +353,41 @@
       });
     }
 
+    function resetEnergyCounter() {
+      $.ajax({
+        url: "http://localhost:8000/api/data/reset_energy_counter",
+        method: "GET",
+        async: false,
+        success: function (response) {
+          console.log("Complete reset energy counter.");
+        },
+        error: function (response) {
+          console.log("Failed to send control command to PZEM.");
+        },
+      });
+    }
+    setInterval(function () {
+      updateChart(voltage_option);
+      updateChart(energy_option);
+      updateChart(current_option);
+      updateChart(power_option);
+      updateChart(pf_option);
+    }, 10000);
+
+    setInterval(function () {
+      resetEnergyCounter();
+    }, 3600000); // 1시간에 한 번
+
     $("#refresh-btn").on("click", function () {
-      updateChart(new_option);
+      updateChart(voltage_option);
+      updateChart(energy_option);
+      updateChart(current_option);
+      updateChart(power_option);
+      updateChart(pf_option);
     });
-    // setInterval(function () {
-    //   updateChart(new_option);
-    // }, 10000);
+
+    $("#reset-btn").on("click", function () {
+      resetEnergyCounter();
+    });
   </script>
 </html>
