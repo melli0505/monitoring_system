@@ -13,7 +13,6 @@ from core.db import models, schemas
 from core.db.base import SessionLocal, engine
 from core.user import user_router, user_crud
 from core.data import data_router
-from core.sensor import sensor_router
 from core.utils import utils
 
 def get_db():
@@ -30,7 +29,6 @@ templates = Jinja2Templates(directory="templates")
 
 app.include_router(user_router.router)
 app.include_router(data_router.router)
-app.include_router(sensor_router.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -49,7 +47,7 @@ app.add_middleware(
 )
 
 
-@app.get('/')#, response_class=HTMLResponse)
+@app.get('/')
 def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
