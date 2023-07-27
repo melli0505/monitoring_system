@@ -1,1 +1,1 @@
-from pzem_pub import publish_control
+from .pzem_pub import publish_control
